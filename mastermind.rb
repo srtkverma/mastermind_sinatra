@@ -1,8 +1,10 @@
+# frozen_string_literal: true
+
 class Mastermind
-  attr_reader :tries
+  attr_reader :tries, :random_number
   def initialize
-    generate_random_number
-    @tries = 0
+    @random_number = generate_random_number
+    @tries = 12
   end
 
   def generate_random_number
@@ -34,7 +36,7 @@ class Mastermind
     @end = true if guess == correct_number || @tries == 12
   end
 
-  def possible_combinations(sample, n)
+  def possible_combinations(sample, _n)
     collection = []
     starting_number = 1111
     end_number = 6666
@@ -65,6 +67,7 @@ class Mastermind
       current_number = {}
       (0...possible_guesses.length).each do |j|
         next unless possible_guesses[j] != possible_guesses
+
         hint = feedback possible_guesses[j], possible_guesses[i]
         digits_places = "#{hint['digits']},#{hint['places']}"
         current_number[digits_places] ||= 0
@@ -72,31 +75,23 @@ class Mastermind
       end
       max = 0
       min = 100
-      current_number.each do |key, value|
+      current_number.each do |_key, value|
         max = value if value > max
         min = value if value < max
       end
       result[possible_guesses[i].to_s] = max
       min_array << min
     end
-    result = result.sort_by do |key, value|
+    result = result.sort_by do |_key, value|
       value
     end
     result[0][0]
   end
 
-  def play
-    random_number = generate_random_number
-    loop do
-      break if @end
-      print 'Enter your guess: '
-      guess = gets.chomp.to_i
-      hint = feedback guess, random_number
-      puts "#{hint['places']} number(s) in right place(s)."
-      puts "#{hint['digits']} number(s) right but in wrong place(s)."
-      check_guess guess, random_number
-      @tries += 1
-    end
+  def play(guess)
+    @tries-=1
+    hint = feedback guess, @random_number
+    return hint
   end
 
   def computer_play
@@ -113,12 +108,12 @@ class Mastermind
         input = input.split(',')
         hint = { 'places' => input[0].to_i, 'digits' => input[1].to_i }
         @tries += 1
-        if hint['places'] == 4
-          break
-        end
+        break if hint['places'] == 4
+
         backup_hint = { 'digits' => hint['digits'], 'places' => hint['places'] }
         (0...possible_guesses.length).each do |i|
           break if possible_guesses[i].nil?
+
           hint = feedback possible_guesses[i], computer_guess
           if backup_hint['digits'] != hint['digits'] || backup_hint['places'] != hint['places']
             possible_guesses.delete possible_guesses[i]
