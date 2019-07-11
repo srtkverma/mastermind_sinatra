@@ -22,5 +22,11 @@ get '/player' do
 end
 
 get '/computer' do
-  erb :computer
+  if params["digits"]!=nil && params["places"]!=nil
+    game.take_hint(params["places"],params["digits"])
+    game.get_computer_guess
+  end
+  erb :computer, :locals=>{:message=>game.computer_guess}
 end
+#1364
+#1234
